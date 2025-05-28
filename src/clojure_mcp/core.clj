@@ -3,6 +3,7 @@
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.tools.logging :as log]
+            [clojure.string :as str]
             [clojure-mcp.nrepl :as nrepl]
             [clojure-mcp.config :as config])
   (:import [io.modelcontextprotocol.server.transport
@@ -48,7 +49,9 @@
           exchange
           arguments
           (fn [result]
-            (.success sink result))))))))
+            (if (.isError result)
+              (.error sink (ex-info (str/join "\n" (map #(.text %) (.content result))) {}))
+              (.success sink result)))))))))
 
 (defn ^McpSchema$CallToolResult adapt-result [list-str error?]
   (McpSchema$CallToolResult.
